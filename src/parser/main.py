@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Pan-parser - a parser for clauses in Pandunia.
+Pan-parser - a parser for clauses in Pandunia and Panlingue.
 
 This script tokenizes input text sentence by sentence, identifies phrases, and outputs syntax trees in text and SVG formats.
 
@@ -10,16 +10,13 @@ Example usage:
     Output:
     Parsing sentence: 'mi pote basa la pandunia.'
     Syntax tree: '(S (NP (PRP mi)) (VP (V pote) (VP (V basa) (NP (D la) (N pandunia.)))))'
-
-    "mi pote basa la pandunia. cing basa la pandunia! mi ama tu. mi tu ama. mi marce. mi su doste fu vide tu su doste. mi su doste tu su doste fu vide."
-
 """
 
 import sys
-import string
 import svgling
 import nltk
 import pandunia_parser as pandunia
+import panlingue_parser as panlingue
 
 consonants = 'bcdfghjklmnpqrstvwxyz'
 vowels = 'aeiou'
@@ -59,75 +56,15 @@ def word_tokenize(text):
     tokens = text.split()
     return tokens
 
-def count_syllables(lower_token):
-    """
-    Count the number of syllables in a token.
+def parse_pandunia(sentence):
+    parser = pandunia.pandunia_parser()
+    tree_string = parser.tag_sentence(parser.word_tokenize(sentence))
+    return tree_string
 
-    Args:
-        lower_token (str): The token in lowercase.
-
-    Returns:
-        int: The number of syllables in the token.
-    """
-    syllables = 0
-    if lower_token[0] in vowels:
-        syllables += 1
-
-    if len(lower_token) > 1:
-        for i in range(len(lower_token) - 1):
-            if lower_token[i] in consonants and lower_token[i+1] in vowels:
-                syllables += 1
-    return syllables
-
-def get_PoS_of_monosyllabic(lower_token):
-    # Placeholder implementation - replace with actual logic
-    if lower_token in ['e', 'o', 'pero']:
-        return 'C'  # Conjunction
-    elif lower_token in ['me', 'tu', 'ho']:
-        return 'PR'  # Pronoun
-    elif lower_token in ['no']:
-        return 'AV'  # Adverb
-    elif lower_token in ['un', 'du', 'tri', 'car']:
-        return 'NU'  # Numeral
-    else:
-        return 'N'  # Noun
-
-def get_PoS_of_polysyllabic(lower_token):
-    last = lower_token[-1]
-    beforelast = lower_token[-2]
-    if beforelast in consonants and last == 'a':
-        return 'V-a'  # Agent-fronted verb
-    elif beforelast in consonants and last == 'u':
-        return 'V-u'  # Patient-fronted verb
-    elif beforelast in consonants and last == 'i':
-        return 'AJ'  # Adjective
-    elif beforelast in consonants and last == 'o':
-        return 'AV'  # Adverb
-    else:
-        return 'N'  # Noun
-
-def pos_tag_panlingue(tokens):
-    """
-    Perform part-of-speech tagging on the list of tokens.
-
-    Args:
-        tokens (list): A list of tokens to tag.
-    Returns:
-        list: A list of [word, tag] pairs.
-    """
-    pos_tags = []
-    for token in tokens:
-        if token in string.punctuation:
-            pos_tags.append([token, ''])
-            continue
-        lower_token = token.lower()
-        syllables = count_syllables(lower_token)
-
-        if syllables == 1:
-            pos_tags.append([token, get_PoS_of_monosyllabic(lower_token)])
-        else:
-            pos_tags.append([token, get_PoS_of_polysyllabic(lower_token)])
-    return pos_tags
+def parse_panlingue(sentence):
+    parser = panlingue.panlingue_parser()
+    tree_string = parser.tag_sentence(parser.word_tokenize(sentence))
+    return tree_string
 
 def main():
     """Main function to handle command-line execution."""
@@ -138,21 +75,23 @@ def main():
         sys.exit(1)
 
     # Get the input text from command-line arguments
-    language = sys.argv[1]
+    language = sys.argv[1].lower()
     input_text = ' '.join(sys.argv[2:])
 
     # Perform POS tagging sentence by sentence
     sentences = split_into_sentences(input_text)
 
-    if language.lower() != 'pandunia':
-        print(f"Language '{language}' is not supported. Currently, only 'pandunia' is supported.")
+    if language not in ['pandunia', 'panlingue']:
+        print(f"Language '{language}' is not supported. Currently, only 'pandunia' and 'panlingue' are supported.")
         sys.exit(1)
 
     i = 0
     for sentence in sentences:
         print(f"Parsing sentence: '{sentence}'")
-        parser = pandunia.pandunia_parser()
-        tree_string = parser.tag_sentence(parser.word_tokenize(sentence))
+        if language == 'pandunia':
+            tree_string = parse_pandunia(sentence)
+        else:
+            tree_string = parse_panlingue(sentence)
         print(f"Syntax tree: '{tree_string}'")
         filename = str(i) + '_' + sentence.strip('.').strip('!').strip('?').strip(',').replace(' ', '_') + '.svg'
         x = nltk.Tree.fromstring(tree_string)
