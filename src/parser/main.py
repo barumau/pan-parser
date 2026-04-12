@@ -93,7 +93,7 @@ def main():
         else:
             tree_string = parse_panlingue(sentence)
         print(f"Syntax tree: '{tree_string}'")
-        filename = str(i) + '_' + sentence.strip('.').strip('!').strip('?').strip(',').replace(' ', '_') + '.svg'
+        filename = 'output/' + language + '/' +str(i) + '_' + sentence.strip('.').strip('!').strip('?').strip(',').replace(' ', '_') + '.svg'
         x = nltk.Tree.fromstring(tree_string)
         svgling.draw_tree(x, leaf_nodes_align=True).saveas(filename, pretty=True)
         i += 1

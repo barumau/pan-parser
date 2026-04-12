@@ -26,7 +26,6 @@ class panlingue_parser:
     cls_TAM_markers = ['sta', 'ha', 'fu']
     cls_personal_pronouns = ['mi', 'tu', 'ho', 'mimen', 'tumen', 'homen']
 
-
     def __init__(self):
         self.phrases = []
         self.word_order = ''
@@ -35,6 +34,28 @@ class panlingue_parser:
         # Simple tokenization based on whitespace.
         tokens = text.split()
         return tokens
+
+    def count_syllables(self, lower_token):
+        """
+        Count the number of syllables in a token.
+
+        Args:
+            lower_token (str): The token in lowercase.
+
+        Returns:
+            int: The number of syllables in the token.
+        """
+        syllables = 0
+        consonants = "bcdfghjklmnpqrstvwxyz"
+        vowels = "aeiou"
+        if lower_token[0] in vowels:
+            syllables += 1
+
+        if len(lower_token) > 1:
+            for i in range(len(lower_token) - 1):
+                if lower_token[i] in consonants and lower_token[i+1] in vowels:
+                    syllables += 1
+        return syllables
 
     def identify_word_class(self, word: str) -> str:
         """
@@ -48,20 +69,21 @@ class panlingue_parser:
         if not word:
             return ""
         
-        word_lower = word.lower().strip()
+        word_lower = word.lower().translate(str.maketrans('', '', string.punctuation))
         
         if word_lower in self.cls_personal_pronouns:
             return "PRP"
 
+        syllable_count = self.count_syllables(word_lower)
         # Verb: Head-initial verb (VO) ends in -Vr
-        if word_lower.endswith('r') and word_lower[-2] in 'aeiou':
+        if syllable_count > 1 and word_lower.endswith('r') and word_lower[-2] in 'aeiou':
             return "V"
         # Verb: Head-final verb (OV) ends in -Vs
-        if word_lower.endswith('s') and word_lower[-2] in 'aeiou':
+        if syllable_count > 1 and word_lower.endswith('s') and word_lower[-2] in 'aeiou':
             return "V"
             
         # Adjective: ends in -ik or -al
-        if word_lower.endswith('ik') or word_lower.endswith('al'):
+        if syllable_count > 1 and (word_lower.endswith('ik') or word_lower.endswith('al')):
             return "A"
         
         # Default: noun
@@ -176,5 +198,5 @@ class panlingue_parser:
     def tag_sentence(self, tokens):
         tagged_tokens = self.tag_word_classes(tokens)
         self.construct_phrases(tagged_tokens)
-        print(tokens)
+        print(tagged_tokens)
         return self.print_sentence_structure()

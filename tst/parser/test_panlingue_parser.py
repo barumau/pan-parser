@@ -64,7 +64,7 @@ class TestPanlingueParser(unittest.TestCase):
         self.assertEqual(result, "(S (VP (NP (PRP tu)) (V amas)) (NP (PRP mi)))")
 
     def test_pronoun_OSV_clause(self):
-        # Note: Currently we don't deal with constituent movement.
+        # Note: Currently we don't deal with constituent movement in the syntax tree.
         tokens = ["tu", "mi", "amar"]
         result = self.parser.tag_sentence(tokens)
         self.assertEqual(result, "(S (NP (PRP tu)) (NP (PRP mi)) (VP (V amar)))")
