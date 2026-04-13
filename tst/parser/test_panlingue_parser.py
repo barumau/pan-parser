@@ -50,33 +50,33 @@ class TestPanlingueParser(unittest.TestCase):
 
     def test_pronoun_SVO_clause(self):
         tokens = ["mi", "amar", "tu"]
-        result = self.parser.tag_sentence(tokens)
+        result = self.parser.parse_into_syntax_tree(tokens)
         self.assertEqual(result, "(S (NP (PRP mi)) (VP (V amar) (NP (PRP tu))))")
 
     def test_pronoun_SOV_clause(self):
         tokens = ["mi", "tu", "amas"]
-        result = self.parser.tag_sentence(tokens)
+        result = self.parser.parse_into_syntax_tree(tokens)
         self.assertEqual(result, "(S (NP (PRP mi)) (VP (NP (PRP tu)) (V amas)))")
 
     def test_pronoun_OVS_clause(self):
         tokens = ["tu", "amas", "mi"]
-        result = self.parser.tag_sentence(tokens)
+        result = self.parser.parse_into_syntax_tree(tokens)
         self.assertEqual(result, "(S (VP (NP (PRP tu)) (V amas)) (NP (PRP mi)))")
 
     def test_pronoun_OSV_clause(self):
         # Note: Currently we don't deal with constituent movement in the syntax tree.
         tokens = ["tu", "mi", "amar"]
-        result = self.parser.tag_sentence(tokens)
+        result = self.parser.parse_into_syntax_tree(tokens)
         self.assertEqual(result, "(S (NP (PRP tu)) (NP (PRP mi)) (VP (V amar)))")
 
     def test_pronoun_VOS_clause(self):
         tokens = ["amar", "tu", "mi"]
-        result = self.parser.tag_sentence(tokens)
+        result = self.parser.parse_into_syntax_tree(tokens)
         self.assertEqual(result, "(S (VP (V amar) (NP (PRP tu))) (NP (PRP mi)))")
 
     def test_noun_SVO_clause(self):
         tokens = ["jen", "volir", "parlar", "novik", "basa"]
-        result = self.parser.tag_sentence(tokens)
+        result = self.parser.parse_into_syntax_tree(tokens)
         self.assertEqual(result, "(S (NP (N jen)) (VP (V volir) (VP (V parlar) (NP (A novik) (N basa)))))")
 
 if __name__ == '__main__':

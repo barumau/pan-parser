@@ -1,4 +1,4 @@
-"""Parser for Pandunia, a constructed globally international auxiliary language.
+"""Parser for Pandunia, a constructed globally sourced international auxiliary language.
 
 It parses input sentences in Pandunia to identify parts of speech and phrase structure,
 aiming to determine the word order (SVO, SOV, etc.) of the input text.
@@ -24,11 +24,12 @@ class Phrase:
 class pandunia_parser:
     cls_determiners = ['un', 'du', 'tri', 'car', 'ye', 'vo', 'la', 'si']
     cls_TAM_markers = ['sta', 'ha', 'fu']
+    cls_auxiliary_and_modal_verbs = ['sta', 'fu', 'ha', 'pote', 'voli', 'debe', 'sabe', 'cing', 'ples']
     cls_personal_pronouns = ['mi', 'tu', 'ho', 'mimen', 'tumen', 'homen']
     def __init__(self):
         self.subject_found = False
         self.phrases = []
-        self.word_order = ''
+        self.phrase_pattern = ''
 
     def word_tokenize(self, text):
         # Simple tokenization based on whitespace.
@@ -90,7 +91,6 @@ class pandunia_parser:
 
     def tag_NP(self, tokens):
         """Tag a noun phrase (NP) starting with a determiner or a personal pronoun."""
-        self.word_order += 'N'
         leap = 0
         subject_found_this_time = False
 
@@ -121,8 +121,6 @@ class pandunia_parser:
         if self.begins_NP(tokens[0]):
             return  self.tag_NP(tokens)
 
-        self.word_order += 'V'
-
         next = 1
         verb_phrase = Phrase('VP')
         verb_phrase.pos_word_pairs.append(('V', tokens[0]))
@@ -138,21 +136,70 @@ class pandunia_parser:
             else:
                 self.tag_VP(tokens[next:])
 
-    def determine_constituent_order(self):
-        if re.match('NVV*N', self.word_order):
-            return 'SVO' #Transitive SVO clause
-        elif re.match('NNVV*', self.word_order):
-            return 'SOV' #Transitive SOV clause
-        elif re.match('VV*N', self.word_order):
-            return 'VO' #Imperative clause
-        elif re.match('NVV*', self.word_order):
-            return 'OV' #Intranstive clause
-        else:
-            return None #Unrecognized word order
+    def determine_phrase_pattern(self):
+        """Determine the phrase pattern of the sentence based on the identified phrases and their types.
+           The function may also reclassify final VPs as NPs if they likely contain a noun due to
+           lack of clear marking and the fact that there are not enough noun phrases in the sentence."""
+        number_of_noun_phrases = sum(1 for phrase in self.phrases if phrase.phrase_type == 'NP')
+        number_of_consecutive_verbs = 0
+        number_of_auxiliary_verbs = 0
+        object_noun_phrase = None
 
-    def print_sentence_structure(self):
+        for phrase in self.phrases:
+            if phrase.phrase_type == 'NP':
+                self.phrase_pattern += 'N'
+            elif phrase.phrase_type == 'VP':
+                number_of_consecutive_verbs += 1
+                word = phrase.pos_word_pairs[0][1].lower()
+                if word in self.cls_auxiliary_and_modal_verbs:
+                    self.phrase_pattern += 'V'
+                    number_of_auxiliary_verbs += 1
+                elif number_of_consecutive_verbs - number_of_auxiliary_verbs == 1:
+                    self.phrase_pattern += 'V' # First main verb in the VP
+                elif number_of_noun_phrases >= 2:
+                    self.phrase_pattern += 'V' # Exceptionally long series of verbs.
+                else:
+                    # Reclassify this VP as an NP, as it is likely an unmarked object NP.
+                    self.phrase_pattern += 'N'
+                    if object_noun_phrase is None:
+                        object_noun_phrase = phrase
+                        object_noun_phrase.phrase_type = 'NP'
+                        object_noun_phrase.pos_word_pairs.pop(0)
+                        object_noun_phrase.pos_word_pairs.insert(0, ('N', word)) # Insert the verb as a noun after the first noun in the phrase.
+                    else:
+                        # Insert other misclassified verbs as noun in the object NP.
+                        object_noun_phrase.pos_word_pairs.append(('N', word))
+                        phrase.phrase_type = 'Deleted VP'
+            else:
+                self.phrase_pattern += 'X' # Unrecognized phrase type for word order determination
+
+        # Remove any phrases that have been reclassified from the list.
+        self.phrases = [phrase for phrase in self.phrases if not phrase.phrase_type == 'Deleted VP']
+
+    def determine_constituent_order(self):
+        """Determine the order of constintuents (subject, verb and object) in the sentence based on the phrase pattern."""
+        self.determine_phrase_pattern()
+
+        if re.match('NVV*N', self.phrase_pattern):
+            constituent_order = 'SVO' #Transitive SVO clause
+        elif re.match('NNVV*', self.phrase_pattern):
+            constituent_order = 'SOV' #Transitive SOV clause
+        elif re.match('VV*N', self.phrase_pattern):
+            constituent_order = 'VO' #Imperative clause with object
+        elif re.match('NVV*', self.phrase_pattern):
+            constituent_order = 'SV' #Intransitive clause
+        elif re.match('VV*', self.phrase_pattern):
+            constituent_order = 'V' #Imperative clause without object
+        else:
+            constituent_order = None #Unrecognized word order
+
+        print(f"Determined constituent order {constituent_order} for phrase pattern {self.phrase_pattern}")
+        return constituent_order
+
+    def build_syntax_tree(self):
+        """Build NLTK tree format string for the identified phrases and their types, based on the determined constituent order."""
         constituent_order = self.determine_constituent_order()
-        sentence = '(S'
+        syntax_tree = '(S'
 
         VPs_to_close = 0
         if constituent_order == 'SOV':
@@ -161,31 +208,32 @@ class pandunia_parser:
                 phrase = self.phrases[i]
 
                 if i == beginning_of_VP:
-                    sentence += ' (VP'
+                    syntax_tree += ' (VP'
                     VPs_to_close += 1
 
                 if phrase.phrase_type == 'VP':
-                    sentence += phrase.print_pos_word_pairs()
+                    syntax_tree += phrase.print_pos_word_pairs()
                 else:
-                    sentence += ' (' + phrase.phrase_type + phrase.print_pos_word_pairs() + ')'
+                    syntax_tree += ' (' + phrase.phrase_type + phrase.print_pos_word_pairs() + ')'
         else:
             for i in range(len(self.phrases)):
                 phrase = self.phrases[i]
-                sentence += ' (' + phrase.phrase_type + phrase.print_pos_word_pairs()
+                syntax_tree += ' (' + phrase.phrase_type + phrase.print_pos_word_pairs()
                 if phrase.phrase_type == 'VP':
                     VPs_to_close += 1
                 else:
-                    sentence += ')'
+                    syntax_tree += ')'
 
         for _ in range(VPs_to_close):
-            sentence += ')'
-        sentence += ')'
-        return sentence
+            syntax_tree += ')'
+        syntax_tree += ')'
+        return syntax_tree
 
-    def tag_sentence(self, tokens):
+    def parse_into_syntax_tree(self, tokens):
+        """Parse the input tokens in Pandunia into a syntax tree in NLTK format."""
         if self.begins_NP(tokens[0]):
             self.tag_NP(tokens)
         else:
             self.tag_VP(tokens)
         print(tokens)
-        return self.print_sentence_structure()
+        return self.build_syntax_tree()

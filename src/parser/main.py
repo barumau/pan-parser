@@ -58,12 +58,12 @@ def word_tokenize(text):
 
 def parse_pandunia(sentence):
     parser = pandunia.pandunia_parser()
-    tree_string = parser.tag_sentence(parser.word_tokenize(sentence))
+    tree_string = parser.parse_into_syntax_tree(parser.word_tokenize(sentence))
     return tree_string
 
 def parse_panlingue(sentence):
     parser = panlingue.panlingue_parser()
-    tree_string = parser.tag_sentence(parser.word_tokenize(sentence))
+    tree_string = parser.parse_into_syntax_tree(parser.word_tokenize(sentence))
     return tree_string
 
 def main():

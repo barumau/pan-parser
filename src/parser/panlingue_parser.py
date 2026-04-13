@@ -1,4 +1,4 @@
-"""Parser for Panlingue, a constructed globally international auxiliary language with word-class marking.
+"""Parser for Panlingue, a constructed globally sourced international auxiliary language with word-class marking.
 
 It parses input sentences in Panlingue to identify parts of speech and phrase structure,
 aiming to determine the word order (SVO, SOV, etc.) of the input text.
@@ -155,7 +155,7 @@ class panlingue_parser:
             return None #Unrecognized word order
 
 
-    def print_sentence_structure(self):
+    def build_syntax_tree(self):
         constituent_order = self.determine_constituent_order()
         print(f"Determined constituent order: {constituent_order}")
         sentence = '(S'
@@ -195,8 +195,9 @@ class panlingue_parser:
         sentence += ')'
         return sentence
 
-    def tag_sentence(self, tokens):
+    def parse_into_syntax_tree(self, tokens):
+        """Parse the input tokens in Panlingue into a syntax tree in NLTK format."""
         tagged_tokens = self.tag_word_classes(tokens)
         self.construct_phrases(tagged_tokens)
         print(tagged_tokens)
-        return self.print_sentence_structure()
+        return self.build_syntax_tree()
