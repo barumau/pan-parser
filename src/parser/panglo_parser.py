@@ -1,8 +1,12 @@
-"""Parser for Panglo, a constructed globally sourced international auxiliary language.
+"""Parser for Panglo, a constructed globally sourced international auxiliary language
+that leans toward Germanic and Romance languages.
 
 It parses input sentences in Panglo to identify parts of speech and phrase structure,
 aiming to determine the word order (SVO, SOV, etc.) of the input text.
 It can output the parsed structure in NLTK tree format that is suitable for visualization with tools like svgling.
+
+The syntax of Panglo is structured by function words and word order.
+Determiners mark NPs and auxiliary verbs mark VPs.
 
 CC-BY 2026 Risto Kupsala (https://github.com/barumau)
 """
