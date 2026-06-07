@@ -32,7 +32,8 @@ class pandunia_parser:
     cls_determiners = ['un', 'du', 'tri', 'car', 'ye', 'vo', 'la', 'si']
     cls_TAM_markers = ['sta', 'ha', 'fu']
     cls_personal_pronouns = ['mi', 'tu', 'ho', 'mimen', 'tumen', 'homen']
-    cls_verbs = ['sta', 'ha', 'fu', 'evolu', 'voli', 'lase', 'loge', 'vide', 'pote', 'ame', 'cing', 'loge']
+    cls_copula_verbs = ['es', 'ekua']
+    cls_verbs = ['es', 'ekua', 'sta', 'ha', 'fu', 'evolu', 'voli', 'lase', 'loge', 'vide', 'pote', 'ame', 'cing', 'loge']
     cls_adjectives = ['bon', 'dus', 'dai', 'lit']
     cls_head_final_possessive_marker = 'su'
     cls_head_initial_possessive_marker = 'da'
@@ -112,64 +113,88 @@ class pandunia_parser:
             tagged_tokens.append((word_class, token))
         return tagged_tokens
     
+    def close_current_phrase(self, current_phrase):
+        if current_phrase is not None:
+            self.phrases.append(current_phrase)
+        return None
+
+    def start_new_NP(self, constituent_type=None):
+        phrase = Phrase("NP")
+        phrase.constituent_type = constituent_type
+        return phrase
+
+    def start_new_VP(self, phrase_type="VP"):
+        phrase = Phrase(phrase_type)
+        phrase.constituent_type = "Verb"
+        return phrase
+
+    def process_pronoun(self, current_phrase, word):
+        current_phrase = self.close_current_phrase(current_phrase)
+        current_phrase = self.start_new_NP("Subject")
+        current_phrase.pos_word_pairs.append(("PRP", word))
+        return current_phrase
+
+    def process_verb(self, current_phrase, word):
+        if current_phrase is not None:
+            if current_phrase.phrase_type == "VP" and current_phrase.pos_word_pairs[-1][1] in self.cls_TAM_markers:
+                current_phrase.pos_word_pairs.append(("V", word))
+                return current_phrase
+            elif current_phrase.phrase_type == "NP" and current_phrase.pos_word_pairs[-1][1] in self.cls_determiners:
+                current_phrase.pos_word_pairs.append(("N", word))
+                return current_phrase
+            else:
+                current_phrase = self.close_current_phrase(current_phrase)
+        phrase_type = "PredP" if word in self.cls_copula_verbs else "VP"
+        current_phrase = self.start_new_VP(phrase_type)
+        current_phrase.pos_word_pairs.append(("V", word))
+        return current_phrase
+
+    def process_possessive_marker(self, current_phrase, word):
+        if current_phrase is not None and len(current_phrase.pos_word_pairs) > 0:
+            old_token = current_phrase.pos_word_pairs[-1][1]
+            current_phrase.pos_word_pairs.pop()
+            current_phrase.pos_word_pairs.append(("D", old_token + " " + word))
+        else:
+            print(f"Warning: Found head-final possessive marker '{word}' without a preceding noun.")
+        return current_phrase
+
+    def process_determiner(self, current_phrase, word):
+        if current_phrase is not None:
+            if current_phrase.phrase_type == "VP":
+                current_phrase = self.close_current_phrase(current_phrase)
+            elif current_phrase.phrase_type == "NP" and current_phrase.pos_word_pairs and current_phrase.pos_word_pairs[-1][0] != "D":
+                self.phrases.append(current_phrase)
+                current_phrase = self.start_new_NP("Subject")
+        if current_phrase is None:
+            current_phrase = self.start_new_NP()
+        current_phrase.pos_word_pairs.append(("D", word))
+        return current_phrase
+
+    def process_adj_noun(self, current_phrase, word_class, word):
+        if current_phrase is not None and current_phrase.phrase_type in ["VP", "PredP"]:
+            current_phrase = self.close_current_phrase(current_phrase)
+        if current_phrase is not None and current_phrase.phrase_type == "NP":
+            if current_phrase.pos_word_pairs and current_phrase.pos_word_pairs[-1][0] == "PRP":
+                current_phrase = self.close_current_phrase(current_phrase)
+        if current_phrase is None:
+            current_phrase = self.start_new_NP()
+        current_phrase.pos_word_pairs.append((word_class, word))
+        return current_phrase
+
     def construct_phrases(self, tagged_tokens):
         current_phrase = None
         for word_class, word in tagged_tokens:
             if word_class == "PRP":
-                if current_phrase is not None:
-                    self.phrases.append(current_phrase)
-                # Pronoun is a self-contained noun phrase
-                current_phrase = Phrase("NP")
-                current_phrase.constituent_type = "Subject"
-                current_phrase.pos_word_pairs.append((word_class, word))
+                current_phrase = self.process_pronoun(current_phrase, word)
             elif word_class == "V":
-                if current_phrase is not None:
-                    if current_phrase.phrase_type == "VP" and current_phrase.pos_word_pairs[-1][1] in self.cls_TAM_markers:
-                        current_phrase.pos_word_pairs.append((word_class, word))
-                    elif current_phrase.phrase_type == "NP" and current_phrase.pos_word_pairs[-1][1] in self.cls_determiners:
-                        current_phrase.pos_word_pairs.append(("N", word))
-                    else:
-                        self.phrases.append(current_phrase)
-                        current_phrase = None
-                if current_phrase is None:
-                    # Start a new verb phrase
-                    current_phrase = Phrase("VP")
-                    current_phrase.constituent_type = "Verb"
-                    current_phrase.pos_word_pairs.append((word_class, word))
+                current_phrase = self.process_verb(current_phrase, word)
             elif word_class == "su":
-                if current_phrase is not None and len(current_phrase.pos_word_pairs) > 0:
-                    old_token = current_phrase.pos_word_pairs[-1][1]
-                    current_phrase.pos_word_pairs.pop() # Remove the last noun from the current phrase
-                    current_phrase.pos_word_pairs.append(("D", old_token + " " + word))
-                else:
-                    print(f"Warning: Found head-final possessive marker '{word}' without a preceding noun.")
+                current_phrase = self.process_possessive_marker(current_phrase, word)
             elif word_class == "D":
-                if current_phrase is not None:
-                    if current_phrase.phrase_type == "VP":
-                        self.phrases.append(current_phrase)
-                        current_phrase = None
-                    elif current_phrase.phrase_type == "NP":
-                        if current_phrase.pos_word_pairs[-1][0] != "D":
-                            # If there's a determiner after a noun, we can assume it marks the beginning of a new noun phrase.
-                            self.phrases.append(current_phrase)
-                            current_phrase = Phrase("NP")
-                            current_phrase.constituent_type = "Subject" #TODO: Consider objects later.
-                if current_phrase is None:
-                    # If we haven't started a phrase yet, start a noun phrase
-                    current_phrase = Phrase("NP")
-                # Add determiner to the current phrase
-                current_phrase.pos_word_pairs.append((word_class, word))
+                current_phrase = self.process_determiner(current_phrase, word)
             elif word_class in ["A", "N"]:
-                if current_phrase is not None and current_phrase.phrase_type == "VP":
-                    self.phrases.append(current_phrase)
-                    current_phrase = None
-                if current_phrase is None:
-                    # If we haven't started a phrase yet, start a noun phrase
-                    current_phrase = Phrase("NP")
-                # Add adjectives and nouns to the current phrase
-                current_phrase.pos_word_pairs.append((word_class, word))
+                current_phrase = self.process_adj_noun(current_phrase, word_class, word)
             else:
-                # For any other word class, we can decide how to handle it (e.g., ignore or create a new phrase)
                 pass
 
         if current_phrase is not None:
@@ -179,7 +204,7 @@ class pandunia_parser:
         for phrase in self.phrases:
             if phrase.phrase_type == 'NP':
                 self.word_order += 'N'
-            elif phrase.phrase_type == 'VP':
+            elif phrase.phrase_type in ["VP", "PredP"]:
                 self.word_order += 'V'
             else:
                 self.word_order += 'X' # Unrecognized phrase type for word order determination
@@ -194,6 +219,8 @@ class pandunia_parser:
             return 'VO' #Imperative clause
         elif re.match('NVV*', self.word_order):
             return 'SV' #Intransitive clause
+        elif self.word_order == 'NN':
+            return 'ZeroCopula' #Noun phrase only
         else:
             return None #Unrecognized word order
 
@@ -203,7 +230,11 @@ class pandunia_parser:
         print(f"Determined constituent order: {constituent_order}")
         sentence = '(S'
 
-        if constituent_order in ['SOV', 'VSO']:
+        if constituent_order is 'ZeroCopula' and len(self.phrases) == 2:
+            sentence += ' (NP' + self.phrases[0].print_pos_word_pairs() + ') (PredP (NP' + self.phrases[1].print_pos_word_pairs() + ')))'
+            return sentence
+
+        if constituent_order in ['SOV']:
             beginning_of_VP = constituent_order.find('V') - 1
             for i in range(len(self.phrases)):
                 phrase = self.phrases[i]
@@ -223,7 +254,7 @@ class pandunia_parser:
             for i in range(len(self.phrases)):
                 phrase = self.phrases[i]
                 sentence += ' (' + phrase.phrase_type + phrase.print_pos_word_pairs()
-                if phrase.phrase_type == 'VP':
+                if phrase.phrase_type in ["VP", "PredP"]:
                     VPs_to_close += 1
                 else:
                     sentence += ')'
