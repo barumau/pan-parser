@@ -28,43 +28,53 @@ class TestPanduniaParser(unittest.TestCase):
     # COPULA CLAUSES WITH THE COPULA "ES" ('BE')
     # Structure: subject NP + copula "es" + predicate NP
 
-    def test_copula_clause_with_be_and_pronoun_subject(self):
+    def test_copula_clause_with_pronoun_subject(self):
         tokens = ["mi", "es", "doste"]
         result = self.parser.parse_into_syntax_tree(tokens)
         self.assertEqual(result, "(S (NP (PRP mi)) (CopP (V es) (NP (N doste))))")
 
-    def test_copula_clause_with_be_and_noun_subject(self):
+    def test_copula_clause_with_noun_subject(self):
         tokens = ["gau", "es", "doste"]
         result = self.parser.parse_into_syntax_tree(tokens)
         self.assertEqual(result, "(S (NP (N gau)) (CopP (V es) (NP (N doste))))")
 
-    def test_volitive_copula_clause_with_be(self):
+    def test_volitive_copula_clause(self):
         tokens = ["gau", "voli", "es", "doste"]
         result = self.parser.parse_into_syntax_tree(tokens)
         self.assertEqual(result, "(S (NP (N gau)) (VP (V voli) (CopP (V es) (NP (N doste)))))")
 
-    def test_potential_volitive_copula_clause_with_be(self):
+    def test_potential_volitive_copula_clause(self):
         tokens = ["gau", "pote", "voli", "es", "doste"]
         result = self.parser.parse_into_syntax_tree(tokens)
         self.assertEqual(result, "(S (NP (N gau)) (VP (V pote) (VP (V voli) (CopP (V es) (NP (N doste))))))")
 
     # COPULA CLAUSES WITH ZERO COPULA
 
-    def test_predicative_clause_without_copula_with_pronoun_subject(self):
+    def test_zero_copula_clause_with_pronoun_subject_and_noun(self):
         tokens = ["mi", "doste"]
         result = self.parser.parse_into_syntax_tree(tokens)
         #self.assertEqual(result, "(S (CP (NP (PRP mi)) (NP (N doste))))")
         self.assertEqual(result, "(S (NP (PRP mi)) (CopP (V ∅) (NP (N doste))))")
 
-    def test_predicative_clause_without_copula_with_pronoun_subject(self):
+    def test_zero_copula_clause_with_pronoun_subject_and_adjective(self):
         tokens = ["mi", "bon"]
         result = self.parser.parse_into_syntax_tree(tokens)
         self.assertEqual(result, "(S (NP (PRP mi)) (CopP (V ∅) (NP (A bon))))")
 
-    def test_predicative_clause_without_copula_with_pronoun_subject(self):
+    def test_zero_copula_clause_with_pronoun_subject_and_complex_NP(self):
         tokens = ["mi", "bon", "doste"]
         result = self.parser.parse_into_syntax_tree(tokens)
         self.assertEqual(result, "(S (NP (PRP mi)) (CopP (V ∅) (NP (A bon) (N doste))))")
+
+    def test_zero_copula_clause_with_noun_subject_and(self):
+        tokens = ["pandunia", "un", "dunia", "basa"]
+        result = self.parser.parse_into_syntax_tree(tokens)
+        self.assertEqual(result, "(S (NP (N pandunia)) (CopP (V ∅) (NP (D un) (N dunia) (N basa))))")
+
+    def test_zero_copula_clause_with_noun_subject_and_definite_NP(self):
+        tokens = ["pandunia", "la", "multikultural", "dunia", "basa"]
+        result = self.parser.parse_into_syntax_tree(tokens)
+        self.assertEqual(result, "(S (NP (N pandunia)) (CopP (V ∅) (NP (D la) (A multikultural) (N dunia) (N basa))))")
 
     # TRANSITIVE CLAUSES WITH SVO
     # Structure: subject NP + verb + object NP (SVO)
