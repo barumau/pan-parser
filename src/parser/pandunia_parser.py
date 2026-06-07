@@ -144,7 +144,7 @@ class pandunia_parser:
                 return current_phrase
             else:
                 current_phrase = self.close_current_phrase(current_phrase)
-        phrase_type = "PredP" if word in self.cls_copula_verbs else "VP"
+        phrase_type = "CopP" if word in self.cls_copula_verbs else "VP"
         current_phrase = self.start_new_VP(phrase_type)
         current_phrase.pos_word_pairs.append(("V", word))
         return current_phrase
@@ -171,7 +171,7 @@ class pandunia_parser:
         return current_phrase
 
     def process_adj_noun(self, current_phrase, word_class, word):
-        if current_phrase is not None and current_phrase.phrase_type in ["VP", "PredP"]:
+        if current_phrase is not None and current_phrase.phrase_type in ["VP", "CopP"]:
             current_phrase = self.close_current_phrase(current_phrase)
         if current_phrase is not None and current_phrase.phrase_type == "NP":
             if current_phrase.pos_word_pairs and current_phrase.pos_word_pairs[-1][0] == "PRP":
@@ -204,7 +204,7 @@ class pandunia_parser:
         for phrase in self.phrases:
             if phrase.phrase_type == 'NP':
                 self.word_order += 'N'
-            elif phrase.phrase_type in ["VP", "PredP"]:
+            elif phrase.phrase_type in ["VP", "CopP"]:
                 self.word_order += 'V'
             else:
                 self.word_order += 'X' # Unrecognized phrase type for word order determination
@@ -231,7 +231,7 @@ class pandunia_parser:
         sentence = '(S'
 
         if constituent_order is 'ZeroCopula' and len(self.phrases) == 2:
-            sentence += ' (NP' + self.phrases[0].print_pos_word_pairs() + ') (PredP (NP' + self.phrases[1].print_pos_word_pairs() + ')))'
+            sentence += ' (NP' + self.phrases[0].print_pos_word_pairs() + ') (CopP (V ∅) (NP' + self.phrases[1].print_pos_word_pairs() + ')))'
             return sentence
 
         if constituent_order in ['SOV']:
@@ -254,7 +254,7 @@ class pandunia_parser:
             for i in range(len(self.phrases)):
                 phrase = self.phrases[i]
                 sentence += ' (' + phrase.phrase_type + phrase.print_pos_word_pairs()
-                if phrase.phrase_type in ["VP", "PredP"]:
+                if phrase.phrase_type in ["VP", "CopP"]:
                     VPs_to_close += 1
                 else:
                     sentence += ')'
