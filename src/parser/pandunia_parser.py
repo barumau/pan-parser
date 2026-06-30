@@ -33,7 +33,10 @@ class pandunia_parser:
     cls_TAM_markers = ['sta', 'ha', 'fu']
     cls_personal_pronouns = ['mi', 'tu', 'ho', 'mimen', 'tumen', 'homen']
     cls_copula_verbs = ['es', 'ekua']
-    cls_verbs = ['es', 'ekua', 'sta', 'ha', 'fu', 'evolu', 'voli', 'lase', 'loge', 'vide', 'pote', 'ame', 'cing', 'loge']
+    cls_auxiliary_verbs = ['sta', 'ha', 'fu', 'voli', 'pote']
+    cls_request_verbs = ['ples', 'cing']
+    # A multiclass word can function either as a verb or as a nominal depending on its position in the phrase or clause.
+    cls_multiclass = ['evolu', 'lase', 'loge', 'vide', 'ame', 'fakte', 'perfakte']
     cls_adjectives = ['bon', 'dus', 'dai', 'lit']
     cls_head_final_possessive_marker = 'su'
     cls_head_initial_possessive_marker = 'da'
@@ -69,6 +72,15 @@ class pandunia_parser:
                     syllables += 1
         return syllables
 
+    def is_verb(self, word_lower):
+        if any(word_lower in collection for collection in (
+            self.cls_auxiliary_verbs,
+            self.cls_copula_verbs,
+            self.cls_request_verbs,
+        )):
+            return True
+        return False
+
     def identify_word_class(self, word: str) -> str:
         """
         Identify Pandunia words by root or ending and return corresponding word class.
@@ -91,10 +103,12 @@ class pandunia_parser:
             return "su"
         elif word_lower in self.cls_head_initial_possessive_marker:
             return "da"
-        elif word_lower in self.cls_verbs:
+        elif self.is_verb(word_lower):
             return "V"
         elif word_lower in self.cls_adjectives:
             return "A"
+        elif word_lower in self.cls_multiclass:
+            return "M"
 
         syllable_count = self.count_syllables(word_lower)
         if syllable_count > 1:
@@ -106,11 +120,44 @@ class pandunia_parser:
         # Default: noun
         return 'N'
 
+    def retag_multiclass_words(self, tagged_tokens):
+        """Some words have been previously tagged as multiclass words ("M").
+           Re-tag them as verbs or nouns based on their position in relation to other words."""
+        main_verb_found = False
+        for idx, (pos, word) in enumerate(tagged_tokens):
+            if pos != "M":
+                if pos == "V":
+                    main_verb_found = True
+                continue
+
+            if idx == 0:
+                tagged_tokens[idx] = ("V", word)
+                continue
+
+            previous_word = tagged_tokens[idx - 1][1].lower()
+            previous_tag = tagged_tokens[idx - 1][0]
+            if previous_word in self.cls_auxiliary_verbs or previous_word in self.cls_request_verbs:
+                tagged_tokens[idx] = ("V", word)
+                main_verb_found = True
+            elif previous_tag == "PRP":
+                tagged_tokens[idx] = ("V", word)
+                main_verb_found = True
+            elif previous_word in self.cls_copula_verbs:
+                tagged_tokens[idx] = ("N", word)
+            elif previous_tag == "N" and main_verb_found == False:
+                tagged_tokens[idx] = ("V", word)
+                main_verb_found = True
+            else:
+                tagged_tokens[idx] = ("N", word)
+
+        return tagged_tokens
+
     def tag_word_classes(self, tokens):
         tagged_tokens = []
         for token in tokens:
             word_class = self.identify_word_class(token)
             tagged_tokens.append((word_class, token))
+        self.retag_multiclass_words(tagged_tokens)
         return tagged_tokens
     
     def close_current_phrase(self, current_phrase):

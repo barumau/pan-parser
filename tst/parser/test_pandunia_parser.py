@@ -48,6 +48,11 @@ class TestPanduniaParser(unittest.TestCase):
         result = self.parser.parse_into_syntax_tree(tokens)
         self.assertEqual(result, "(S (NP (N gau)) (VP (V pote) (VP (V voli) (CopP (V es) (NP (N doste))))))")
 
+    def test_copula_clause_with_multiclass_complement(self):
+        tokens = ["tu", "es", "perfakte"]
+        result = self.parser.parse_into_syntax_tree(tokens)
+        self.assertEqual(result, "(S (NP (PRP tu)) (CopP (V es) (NP (N perfakte))))")
+
     # COPULA CLAUSES WITH ZERO COPULA
 
     def test_zero_copula_clause_with_pronoun_subject_and_noun(self):
@@ -114,6 +119,21 @@ class TestPanduniaParser(unittest.TestCase):
         result = self.parser.parse_into_syntax_tree(tokens)
         self.assertEqual(result, "(S (NP (PRP mi)) (VP (V loge) (NP (N nova) (N dunia) (N basa))))")
 
+    def test_pronoun_SVO_clause_with_multiclass_verb(self):
+        tokens = ["tu", "perfakte", "mimen"]
+        result = self.parser.parse_into_syntax_tree(tokens)
+        self.assertEqual(result, "(S (NP (PRP tu)) (VP (V perfakte) (NP (PRP mimen))))")
+
+    def test_SVO_clause_with_multiclass_verb(self):
+        tokens = ["master", "perfakte", "arte"]
+        result = self.parser.parse_into_syntax_tree(tokens)
+        self.assertEqual(result, "(S (NP (N master)) (VP (V perfakte) (NP (N arte))))")
+
+    def test_pronoun_SVO_clause_with_multiclass_verb_and_multiclass_object(self):
+        tokens = ["tu", "fakte", "perfakte", "fakte"]
+        result = self.parser.parse_into_syntax_tree(tokens)
+        self.assertEqual(result, "(S (NP (PRP tu)) (VP (V fakte) (NP (N perfakte) (N fakte))))")
+
     # TRANSITIVE CLAUSES WITH SOV (FOCUSING ON THE OBJECT)
     # Structure: subject NP + object NP + verb (SOV)
 
@@ -154,6 +174,16 @@ class TestPanduniaParser(unittest.TestCase):
         result = self.parser.parse_into_syntax_tree(tokens)
         self.assertEqual(result, "(S (VP (V loge) (NP (D la) (N dunia) (N basa))))")
 
+    def test_imperative_VO_with_multiclass_verb(self):
+        tokens = ["fakte", "pandunia"]
+        result = self.parser.parse_into_syntax_tree(tokens)
+        self.assertEqual(result, "(S (VP (V fakte) (NP (N pandunia))))")
+
+    def test_imperative_VO_with_multiclass_verb_and_multiclass_object(self):
+        tokens = ["fakte", "perfakte"]
+        result = self.parser.parse_into_syntax_tree(tokens)
+        self.assertEqual(result, "(S (VP (V fakte) (NP (N perfakte))))")
+
     def test_request_VP(self):
         tokens = ["cing", "loge", "la", "pandunia"]
         result = self.parser.parse_into_syntax_tree(tokens)
@@ -168,6 +198,11 @@ class TestPanduniaParser(unittest.TestCase):
         tokens = ["cing", "loge", "nova", "dunia", "basa"]
         result = self.parser.parse_into_syntax_tree(tokens)
         self.assertEqual(result, "(S (VP (V cing) (VP (V loge) (NP (N nova) (N dunia) (N basa)))))")
+
+    def test_request_VP_with_multiclass_verb(self):
+        tokens = ["cing", "fakte", "nova", "dunia", "basa"]
+        result = self.parser.parse_into_syntax_tree(tokens)
+        self.assertEqual(result, "(S (VP (V cing) (VP (V fakte) (NP (N nova) (N dunia) (N basa)))))")
 
 
     # TODO: Support the pivot construction, as in 'cing lase dunia loge' ('Please let the world talk').
