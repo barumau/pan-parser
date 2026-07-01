@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xlink="http://www.w3.org/1999/xlink" baseProfile="full" height="264px" preserveAspectRatio="xMidYMid meet" style="font-family: times, serif; font-weight: normal; font-style: normal; font-size: 16px" version="1.1" viewBox="0,0,248.0,264.0" width="248px">
+  <defs/>
+  <svg width="100%" x="0" y="0px">
+    <defs/>
+    <text text-anchor="middle" x="50%" y="16px">S</text>
+  </svg>
+  <svg width="16.129%" x="0%" y="48px">
+    <defs/>
+    <svg width="100%" x="0" y="0px">
+      <defs/>
+      <text text-anchor="middle" x="50%" y="16px">NP</text>
+    </svg>
+    <svg width="100%" x="0%" y="48px">
+      <defs/>
+      <svg width="100%" x="0" y="0px">
+        <defs/>
+        <text text-anchor="middle" x="50%" y="16px">PRP</text>
+      </svg>
+      <svg width="100%" x="0%" y="144px">
+        <defs/>
+        <svg width="100%" x="0" y="0px">
+          <defs/>
+          <text text-anchor="middle" x="50%" y="16px">mi</text>
+        </svg>
+      </svg>
+      <line stroke="black" x1="50%" x2="50%" y1="20px" y2="144px"/>
+    </svg>
+    <line stroke="black" x1="50%" x2="50%" y1="20px" y2="48px"/>
+  </svg>
+  <line stroke="black" x1="50%" x2="8.06452%" y1="20px" y2="48px"/>
+  <svg width="83.871%" x="16.129%" y="48px">
+    <defs/>
+    <svg width="100%" x="0" y="0px">
+      <defs/>
+      <text text-anchor="middle" x="50%" y="16px">VP</text>
+    </svg>
+    <svg width="23.0769%" x="0%" y="48px">
+      <defs/>
+      <svg width="100%" x="0" y="0px">
+        <defs/>
+        <text text-anchor="middle" x="50%" y="16px">V</text>
+      </svg>
+      <svg width="100%" x="0%" y="144px">
+        <defs/>
+        <svg width="100%" x="0" y="0px">
+          <defs/>
+          <text text-anchor="middle" x="50%" y="16px">pote</text>
+        </svg>
+      </svg>
+      <line stroke="black" x1="50%" x2="50%" y1="20px" y2="144px"/>
+    </svg>
+    <line stroke="black" x1="50%" x2="11.5385%" y1="20px" y2="48px"/>
+    <svg width="76.9231%" x="23.0769%" y="48px">
+      <defs/>
+      <svg width="100%" x="0" y="0px">
+        <defs/>
+        <text text-anchor="middle" x="50%" y="16px">VP</text>
+      </svg>
+      <svg width="30%" x="0%" y="48px">
+        <defs/>
+        <svg width="100%" x="0" y="0px">
+          <defs/>
+          <text text-anchor="middle" x="50%" y="16px">V</text>
+        </svg>
+        <svg width="100%" x="0%" y="96px">
+          <defs/>
+          <svg width="100%" x="0" y="0px">
+            <defs/>
+            <text text-anchor="middle" x="50%" y="16px">loge</text>
+          </svg>
+        </svg>
+        <line stroke="black" x1="50%" x2="50%" y1="20px" y2="96px"/>
+      </svg>
+      <line stroke="black" x1="50%" x2="15%" y1="20px" y2="48px"/>
+      <svg width="70%" x="30%" y="48px">
+        <defs/>
+        <svg width="100%" x="0" y="0px">
+          <defs/>
+          <text text-anchor="middle" x="50%" y="16px">NP</text>
+        </svg>
+        <svg width="50%" x="0%" y="48px">
+          <defs/>
+          <svg width="100%" x="0" y="0px">
+            <defs/>
+            <text text-anchor="middle" x="50%" y="16px">N</text>
+          </svg>
+          <svg width="100%" x="0%" y="48px">
+            <defs/>
+            <svg width="100%" x="0" y="0px">
+              <defs/>
+              <text text-anchor="middle" x="50%" y="16px">dunia</text>
+            </svg>
+          </svg>
+          <line stroke="black" x1="50%" x2="50%" y1="20px" y2="48px"/>
+        </svg>
+        <line stroke="black" x1="50%" x2="25%" y1="20px" y2="48px"/>
+        <svg width="50%" x="50%" y="48px">
+          <defs/>
+          <svg width="100%" x="0" y="0px">
+            <defs/>
+            <text text-anchor="middle" x="50%" y="16px">N</text>
+          </svg>
+          <svg width="100%" x="0%" y="48px">
+            <defs/>
+            <svg width="100%" x="0" y="0px">
+              <defs/>
+              <text text-anchor="middle" x="50%" y="16px">basa.</text>
+            </svg>
+          </svg>
+          <line stroke="black" x1="50%" x2="50%" y1="20px" y2="48px"/>
+        </svg>
+        <line stroke="black" x1="50%" x2="75%" y1="20px" y2="48px"/>
+      </svg>
+      <line stroke="black" x1="50%" x2="65%" y1="20px" y2="48px"/>
+    </svg>
+    <line stroke="black" x1="50%" x2="61.5385%" y1="20px" y2="48px"/>
+  </svg>
+  <line stroke="black" x1="50%" x2="58.0645%" y1="20px" y2="48px"/>
+</svg>

@@ -5,7 +5,7 @@ Pan-parser - a parser for clauses in Pandunia and Panlingue.
 This script tokenizes input text sentence by sentence, identifies phrases, and outputs syntax trees in text and SVG formats.
 
 Example usage:
-    python src/parser/main.py pandunia "mi pote basa la pandunia."
+    python src/parser/parse.py pandunia "mi pote basa la pandunia."
 
     Output:
     Parsing sentence: 'mi pote basa la pandunia.'
